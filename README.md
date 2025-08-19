@@ -45,7 +45,7 @@ mailscheduler/
 
 Clone the repo
 
-git clone https://github.com/nav380/emailscheduler.git
+git clone https://github.com/nav380/emailshedular.git
 cd mailscheduler
 
 
