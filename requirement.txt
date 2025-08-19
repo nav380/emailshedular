@@ -1,0 +1,25 @@
+# Django Framework
+Django>=4.2,<5.0
+
+# Celery for task scheduling
+celery>=5.3.0
+
+# Redis (as broker) - OR install pika if using RabbitMQ
+redis>=5.0.0
+
+# django-cron for cron-based scheduling
+django-cron>=0.6.0
+
+# For environment variables
+python-decouple>=3.8
+
+# For email sending (built-in smtplib works, but including helpers)
+django-anymail[django]>=10.2
+
+# Database adapter (use as per DB)
+psycopg2-binary>=2.9.9   # For PostgreSQL
+# OR
+# mysqlclient>=2.2.4     # For MySQL
+
+# Optional: For production
+gunicorn>=21.2.0
