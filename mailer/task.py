@@ -2,7 +2,9 @@ import datetime
 import logging
 from celery import shared_task
 from django.core.mail import send_mail
-from .models import ScheduledEmail, hourlyEmail, dailyEmail, weeklyEmail, monthlyEmail
+from django.utils import timezone
+import logging
+from .models import ScheduledEmail, hourlyEmail, dailyEmail, weeklyEmail, monthlyEmail, Emailsender
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +14,7 @@ def send_scheduled_emails():
     Celery task that runs periodically (every minute via celery beat).
     It checks scheduled emails in all frequency models and sends them.
     """
+    print("Running scheduled email task...")
     now = datetime.datetime.now()
     current_time = now.time().replace(second=0, microsecond=0)
     current_day = now.strftime("%A")
@@ -48,7 +51,9 @@ def send_scheduled_emails():
         _send_email(m.scheduled_email)
 
 
+
 def _send_email(scheduled_email: ScheduledEmail):
+    print(f"Sending email to {scheduled_email.recipient_email} with subject '{scheduled_email.subject}'")
     """Helper to send email + log result"""
     try:
         send_mail(
@@ -58,6 +63,21 @@ def _send_email(scheduled_email: ScheduledEmail):
             recipient_list=[scheduled_email.recipient_email],
             fail_silently=False,
         )
+
+        # Log successful send
+        Emailsender.objects.create(
+            scheduled_email=scheduled_email,
+            is_sent=True,
+            sent_time=timezone.now()
+        )
+
         logger.info("✅ Email sent to %s (Subject: %s)", scheduled_email.recipient_email, scheduled_email.subject)
+
     except Exception as e:
-        logger.error("❌ Failed to send email to %s. Error: %s", scheduled_email.recipient_email, str(e))
+        # Log failure
+        Emailsender.objects.create(
+            scheduled_email=scheduled_email,
+            is_sent=False,
+            sent_time=timezone.now()
+        )
+        logger.error("❌ Failed to send email to %s. Error: %s", scheduled_email.recipient_email, str(e), exc_info=True)
